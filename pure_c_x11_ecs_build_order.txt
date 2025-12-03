@@ -1,0 +1,92 @@
+ECS Build Order (Pure C + X11 + Software Rendering)
+
+1. Core Foundations
+- Set up project structure
+- Makefile or build script
+- Logging utilities
+- Math library (Vec2, Rect)
+- Custom allocators (optional)
+
+2. Platform Layer (X11)
+- Open X11 display (XOpenDisplay)
+- Create window (XCreateSimpleWindow)
+- Handle events: keypress, close, expose
+- Allocate pixel buffer (uint32_t*)
+- Use XImage + XPutImage to blit buffer
+- Implement input polling, timing utilities, FPS limiter
+
+3. ECS Core
+- Entity IDs (uint32_t) and free list
+- Component storage (SoA arrays)
+- Add/remove component functions
+- System update loop with ordered execution
+- World struct holding entity + component arrays
+
+4. Core Components
+- Transform (x, y, rotation optional)
+- Sprite/Renderable (color or bitmap reference)
+- Velocity
+- Input flags for player
+
+5. Software Renderer
+- Backbuffer: malloc(width*height*4)
+- Implement draw_pixel, draw_rect, draw_bitmap
+- Optional bitmap font for text
+- RenderSystem iterates sprites and draws into framebuffer
+- Blit framebuffer with XPutImage
+
+6. Input System
+- Convert X11 events into input state
+- Store states in Input component or global struct
+- InputSystem sets velocity or flags for entities
+
+7. Basic Game Loop Order
+InputSystem()
+MovementSystem()
+CollisionSystem()   // stub
+AnimationSystem()   // stub
+RenderSystem()
+
+8. Asset Pipeline
+- Minimal bitmap loader (.bmp recommended)
+- Sprite rectangles defined manually
+- Simple file I/O helpers
+- Later: prefab files and text maps
+
+9. Collision + Physics
+- AABB component
+- Broadphase (grid or brute force)
+- AABB narrowphase
+- Simple resolution (slide/block)
+- Tilemap collision support
+
+10. Animation System
+- Frame index + timing accumulator
+- Update sprite frame rect
+
+11. Audio System (Optional)
+- ALSA or OSS raw audio
+- Can skip early on
+
+12. World / Scene Management
+- Text-based tile map loader
+- Entity spawns based on map
+- Scene transition rules
+
+13. AI + Gameplay Systems
+- Finite state machine component
+- Pathfinding (A*)
+- Combat system
+- Inventory + stats
+
+14. Debug Systems
+- Hitbox rendering
+- FPS counter
+- Entity count overlay
+
+15. Optimization Phase
+- Cache-friendly SoA layout
+- Pre-allocated pools
+- Reduce branching in loops
+- Batch draw calls
+- Integer math optimizations
