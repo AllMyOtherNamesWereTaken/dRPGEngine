@@ -1,11 +1,12 @@
 #include "engine/graphics/window.h"
-#include "systems/render_system.h"
+#include "engine/renderer/render_system.h"
+#include "engine/input/input.h"
 
 /*
  * main
  *
  * Responsibilities:
- *  - Initialize engine/platform resources (the Window).
+ *  - Initialize engine/platform resources (the Window, input state, render system).
  *  - Run the main loop: poll events, update systems, render, present.
  *  - Clean up resources on exit.
  *
@@ -19,16 +20,28 @@ int main(void) {
         return 1;
     }
 
+    InputState input = {0};
+    RenderSystemState render_state;
+    render_system_init(&render_state, win.width, win.height);
+
     int quit = 0;
+    SDL_Event event;
     while (!quit) {
-        /* Poll platform events and update quit flag */
-        window_poll_events(&win, &quit);
+        /* Poll platform events and update quit flag and input state */
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                quit = 1;
+            } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+                quit = 1;
+            }
+            input_handle_event(&input, &event);
+        }
 
         /* Start a new frame */
         window_clear(&win);
 
-        /* Run render system which issues draw calls */
-        render_system_update(&win);
+        /* Run render system which updates positions and issues draw calls */
+        render_system_update(&render_state, &win, &input);
 
         /* Present the composed frame to the screen */
         window_present(&win);
