@@ -15,6 +15,9 @@ typedef struct RenderSystemState {
     int square_x;
     int square_y;
     Texture background;
+    /* Camera top-left in world/background coordinates */
+    int camera_x;
+    int camera_y;
 } RenderSystemState;
 
 /*
