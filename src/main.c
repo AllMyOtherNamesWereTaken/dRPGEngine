@@ -22,7 +22,10 @@ int main(void) {
 
     InputState input = {0};
     RenderSystemState render_state;
-    render_system_init(&render_state, win.width, win.height);
+    if (render_system_init(&render_state, &win, win.width, win.height) != 0) {
+        window_destroy(&win);
+        return 1;
+    }
 
     int quit = 0;
     SDL_Event event;
@@ -51,7 +54,8 @@ int main(void) {
         SDL_Delay(16);
     }
 
-    /* Clean up engine/platform resources */
+    /* Clean up resources */
+    render_system_destroy(&render_state);
     window_destroy(&win);
     return 0;
 }

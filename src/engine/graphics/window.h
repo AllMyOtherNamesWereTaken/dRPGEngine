@@ -71,6 +71,15 @@ void window_present(Window *win);
 
 
 /*
+ * Draw a texture stretched to fill a rectangle.
+ *
+ * Purpose: render a preloaded texture to the screen. Useful for backgrounds,
+ * sprites, and UI elements.
+ */
+void window_draw_texture(Window *win, SDL_Texture *texture, SDL_Rect *dest);
+
+
+/*
  * Destroy the window and shut down SDL.
  *
  * Purpose: free renderer and window resources and call `SDL_Quit()` to leave

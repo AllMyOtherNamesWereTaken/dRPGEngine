@@ -104,6 +104,16 @@ void window_present(Window *win) {
 
 
 /*
+ * Draw a texture to the screen.
+ *
+ * Why: Simple wrapper to render a preloaded texture to a destination rectangle.
+ */
+void window_draw_texture(Window *win, SDL_Texture *texture, SDL_Rect *dest) {
+    SDL_RenderCopy(win->renderer, texture, NULL, dest);
+}
+
+
+/*
  * Destroy renderer and window and call SDL_Quit().
  *
  * Why: Provides a single, safe place for SDL cleanup. If you add other SDL
