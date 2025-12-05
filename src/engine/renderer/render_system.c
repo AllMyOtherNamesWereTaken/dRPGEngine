@@ -12,8 +12,9 @@ int render_system_init(RenderSystemState *state, Window *win, int window_width, 
     state->square_y = (window_height - 50) / 2;
     state->camera_x = 0;
     state->camera_y = 0;
+    state->current_level = 0; /* Start at onetown */
 
-    if (texture_load_png(&state->background, win->renderer, "src/game/assets/background.png") != 0) {
+    if (texture_load_png(&state->background, win->renderer, "src/game/assets/onetown.png") != 0) {
         fprintf(stderr, "Failed to load background texture\n");
         return -1;
     }
@@ -41,14 +42,34 @@ int render_system_init(RenderSystemState *state, Window *win, int window_width, 
 }
 
 /*
+ * load_level
+ *
+ * Helper to load a new level background and reposition the player.
+ * Unloads the old texture and loads the new one.
+ */
+int load_level(RenderSystemState *state, Window *win, const char *bg_path, int player_x, int player_y) {
+    texture_destroy(&state->background);
+    if (texture_load_png(&state->background, win->renderer, bg_path) != 0) {
+        fprintf(stderr, "Failed to load level texture: %s\n", bg_path);
+        return -1;
+    }
+    state->square_x = player_x;
+    state->square_y = player_y;
+    state->camera_x = 0;
+    state->camera_y = 0;
+    return 0;
+}
+
+
+/*
  * render_system_update
  *
- * Update the square position based on input, draw the background texture,
- * then draw the square on top.
+ * Update the square position based on input, check for level transitions,
+ * draw the background texture, then draw the square on top.
  *
- * Why: demonstrates input integration with rendering. The system reads
- * input state, updates entity positions, and issues draw calls.
- * In a real ECS this would iterate all entities with Update/Render components.
+ * Why: demonstrates input integration with rendering and level transitions.
+ * The system reads input state, updates entity positions, detects transitions,
+ * and issues draw calls.
  */
 void render_system_update(RenderSystemState *state, Window *win, InputState *input) {
     int dx, dy;
@@ -63,6 +84,32 @@ void render_system_update(RenderSystemState *state, Window *win, InputState *inp
     if (state->square_y < 0) state->square_y = 0;
     if (state->square_x + 50 > state->background.width) state->square_x = state->background.width - 50;
     if (state->square_y + 50 > state->background.height) state->square_y = state->background.height - 50;
+
+    /* Check for level transitions */
+    if (state->current_level == 0) {
+        /* On onetown: transition to overworld_level1 when hitting top or bottom edge */
+        if (state->square_y <= 0) {
+            /* Hit top edge of onetown, load overworld_level1 with player at specified position */
+            if (load_level(state, win, "src/game/assets/overworld_level1.png", 1800, 1180) == 0) {
+                state->current_level = 1;
+            }
+        } else if (state->square_y + 50 >= state->background.height) {
+            /* Hit bottom edge of onetown, load overworld_level1 with player at specified position */
+            if (load_level(state, win, "src/game/assets/overworld_level1.png", 1800, 1180) == 0) {
+                state->current_level = 1;
+            }
+        }
+    } else if (state->current_level == 1) {
+        /* On overworld_level1: transition back to onetown when at exit location */
+        if (state->square_x >= 1745 - 25 && state->square_x <= 1745 + 25 &&
+            state->square_y >= 1177 - 25 && state->square_y <= 1177 + 25) {
+            /* Player is near the exit point, load onetown */
+            if (load_level(state, win, "src/game/assets/onetown.png", 
+                          (500 - 50) / 2, (500 - 50) / 2) == 0) {
+                state->current_level = 0;
+            }
+        }
+    }
 
     /* Compute camera so the square is near the center of the view */
     int cam_x = state->square_x + 25 - (win->width / 2);

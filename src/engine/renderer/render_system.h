@@ -8,8 +8,8 @@
 /*
  * RenderSystemState
  *
- * Tracks the position of the player square and the background texture.
- * The render system maintains this across frames so position persists.
+ * Tracks the position of the player square, the background texture, and
+ * the current level. The render system maintains this across frames so state persists.
  */
 typedef struct RenderSystemState {
     int square_x;
@@ -18,6 +18,8 @@ typedef struct RenderSystemState {
     /* Camera top-left in world/background coordinates */
     int camera_x;
     int camera_y;
+    /* Current level (0 = onetown, 1 = overworld_level1) */
+    int current_level;
 } RenderSystemState;
 
 /*
@@ -43,5 +45,15 @@ void render_system_update(RenderSystemState *state, Window *win, InputState *inp
  * Purpose: clean up resources (background texture).
  */
 void render_system_destroy(RenderSystemState *state);
+
+/*
+ * load_level
+ *
+ * Purpose: internal helper to load a new background and reposition the player.
+ *
+ * Unloads the current background and loads a new one at the specified path,
+ * then positions the player at the given coordinates.
+ */
+int load_level(RenderSystemState *state, Window *win, const char *bg_path, int player_x, int player_y);
 
 #endif /* SYSTEMS_RENDER_SYSTEM_H */
